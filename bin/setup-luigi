@@ -1,0 +1,125 @@
+#!/bin/bash
+
+# Luigi Knowledge Extractor Setup Script
+# This script helps you get the application running after configuring Supabase
+
+set -e
+
+echo "🚀 Luigi Knowledge Extractor Setup"
+echo "=================================="
+echo ""
+
+# Check if .env file exists
+if [ ! -f .env ]; then
+    echo "❌ .env file not found!"
+    echo "📋 Please copy .env.example to .env and configure your credentials:"
+    echo "   cp .env.example .env"
+    echo ""
+    echo "📖 Then follow the Supabase setup guide: SUPABASE_SETUP.md"
+    exit 1
+fi
+
+# Check if essential environment variables are set
+echo "🔍 Checking environment configuration..."
+
+check_env_var() {
+    local var_name=$1
+    local var_value=$(grep "^${var_name}=" .env | cut -d'=' -f2-)
+    
+    if [[ -z "$var_value" || "$var_value" == *"your_"* ]]; then
+        echo "❌ $var_name not configured in .env"
+        return 1
+    else
+        echo "✅ $var_name configured"
+        return 0
+    fi
+}
+
+config_ok=true
+
+check_env_var "DATABASE_URL" || config_ok=false
+check_env_var "SUPABASE_URL" || config_ok=false
+check_env_var "SUPABASE_ANON_KEY" || config_ok=false
+check_env_var "OPENAI_API_KEY" || config_ok=false
+
+if [ "$config_ok" = false ]; then
+    echo ""
+    echo "❌ Environment configuration incomplete!"
+    echo "📖 Please follow the setup guide: SUPABASE_SETUP.md"
+    exit 1
+fi
+
+echo ""
+echo "✅ Environment configuration looks good!"
+echo ""
+
+# Stop any running containers
+echo "🛑 Stopping any existing containers..."
+docker-compose down
+
+# Start supporting services
+echo "🔄 Starting Redis and Neo4j..."
+docker-compose up -d redis neo4j
+
+# Wait a moment for services to start
+echo "⏳ Waiting for services to initialize..."
+sleep 5
+
+# Build and start the main application
+echo "🏗️  Building Luigi application..."
+docker-compose build luigi-app
+
+echo "🚀 Starting Luigi application..."
+docker-compose up -d luigi-app
+
+# Wait for application to start
+echo "⏳ Waiting for application to start..."
+sleep 10
+
+# Run database migrations
+echo "📊 Running database migrations..."
+if docker-compose exec -T luigi-app bundle exec rails db:migrate; then
+    echo "✅ Migrations completed successfully!"
+else
+    echo "❌ Migration failed! Check your DATABASE_URL configuration."
+    echo "📖 See SUPABASE_SETUP.md for help"
+    exit 1
+fi
+
+# Initialize Luigi expert
+echo "👨‍🔧 Initializing Luigi expert..."
+if docker-compose exec -T luigi-app bundle exec rails runner "LuigiExpert.luigi"; then
+    echo "✅ Luigi expert initialized!"
+else
+    echo "❌ Luigi expert initialization failed!"
+    exit 1
+fi
+
+# Check health
+echo "🏥 Running health checks..."
+echo "⏳ Waiting for application to be ready..."
+sleep 5
+
+# Test the health endpoint
+if curl -f -s http://localhost:3333/health > /dev/null 2>&1; then
+    echo "✅ Application health check passed!"
+else
+    echo "⚠️  Application may still be starting. Check manually at:"
+    echo "   http://localhost:3333/health"
+fi
+
+echo ""
+echo "🎉 Setup completed!"
+echo ""
+echo "📱 Your Luigi Knowledge Extractor is ready:"
+echo "   🌐 Web Interface: http://localhost:3333"
+echo "   🏥 Health Check:  http://localhost:3333/health" 
+echo "   📊 Neo4j Browser: http://localhost:7475 (user: neo4j, pass: password)"
+echo ""
+echo "📖 To view logs:"
+echo "   docker-compose logs -f luigi-app"
+echo ""
+echo "🛑 To stop everything:"
+echo "   docker-compose down"
+echo ""
+echo "🎯 Ready to extract Luigi's construction wisdom!"

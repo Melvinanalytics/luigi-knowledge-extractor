@@ -1,0 +1,162 @@
+<div class="min-h-screen flex items-center justify-center p-4">
+  <div class="max-w-4xl w-full">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <div class="flex justify-center mb-6">
+        <div class="glass-effect p-8 rounded-3xl">
+          <div class="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-2xl">
+            <svg class="w-16 h-16 text-white mx-auto" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.54 0 3.04-.34 4.39-.95l.61.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-.61-.61C19.66 15.04 22 13.54 22 12c0-5.52-4.48-10-10-10zm5.83 14.83c-.78.78-1.81 1.17-2.83 1.17s-2.05-.39-2.83-1.17L9 13.66c-.78-.78-1.17-1.81-1.17-2.83s.39-2.05 1.17-2.83c.78-.78 1.81-1.17 2.83-1.17s2.05.39 2.83 1.17L17.83 10.83z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <h1 class="text-5xl font-bold text-white mb-4">
+        Luigi Knowledge Extractor
+      </h1>
+      
+      <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+        Strukturiere Luigi's 30-jährige Erfahrung in der Bausanierung. 
+        <span class="text-yellow-300">Intelligente Wissensextraktion</span> mit automatischen Nachfragen und Graph-Visualisierung.
+      </p>
+    </div>
+    
+    <!-- Statistics Dashboard -->
+    <% if @stats[:total_sessions] > 0 %>
+      <div class="grid grid-cols-3 gap-6 mb-12">
+        <div class="glass-effect rounded-2xl p-6 text-center">
+          <div class="text-3xl font-bold text-white mb-2"><%= @stats[:total_sessions] %></div>
+          <div class="text-blue-200">Wissenssessions</div>
+        </div>
+        
+        <div class="glass-effect rounded-2xl p-6 text-center">
+          <div class="text-3xl font-bold text-white mb-2"><%= @stats[:total_messages] %></div>
+          <div class="text-blue-200">Nachrichten verarbeitet</div>
+        </div>
+        
+        <div class="glass-effect rounded-2xl p-6 text-center">
+          <div class="text-3xl font-bold text-white mb-2"><%= (@stats[:avg_confidence] * 100).round %>%</div>
+          <div class="text-blue-200">Verstehensrate</div>
+        </div>
+      </div>
+    <% end %>
+    
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+      <%= link_to sessions_path, 
+                  method: :post,
+                  class: "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-4 px-8 rounded-2xl text-lg transition-all duration-200 transform hover:scale-105 shadow-xl text-center",
+                  data: { 
+                    turbo_method: :post,
+                    confirm: "Neue Wissenssession mit Luigi starten?" 
+                  } do %>
+        <div class="flex items-center justify-center space-x-3">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>Neue Session starten</span>
+        </div>
+      <% end %>
+      
+      <% if @recent_sessions.any? %>
+        <%= link_to sessions_path,
+                    class: "glass-effect hover:bg-white/20 text-white font-semibold py-4 px-8 rounded-2xl text-lg transition-all duration-200 text-center border border-white/20" do %>
+          <div class="flex items-center justify-center space-x-3">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span>Alle Sessions anzeigen</span>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <!-- Recent Sessions -->
+    <% if @recent_sessions.any? %>
+      <div class="glass-effect rounded-2xl p-8">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+          <svg class="w-6 h-6 mr-3 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Letzte Wissenssessions
+        </h2>
+        
+        <div class="space-y-4">
+          <% @recent_sessions.each do |session| %>
+            <%= link_to session_path(session), 
+                        class: "block glass-effect hover:bg-white/20 rounded-xl p-6 transition-all duration-200 border border-white/10" do %>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-lg font-semibold text-white mb-2">
+                    <%= session.session_name %>
+                  </h3>
+                  <div class="flex items-center space-x-4 text-sm text-blue-200">
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                      <%= session.total_messages %> Nachrichten
+                    </span>
+                    <span class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <%= session.entities_extracted %> Konzepte
+                    </span>
+                    <span class="text-xs text-blue-300">
+                      <%= time_ago_in_words(session.started_at) %> ago
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="text-right">
+                  <div class="text-lg font-bold text-white">
+                    <%= (session.avg_confidence * 100).round %>%
+                  </div>
+                  <div class="text-xs text-blue-200">Verstanden</div>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    
+    <!-- Features Info -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+      <div class="glass-effect rounded-xl p-6 text-center">
+        <div class="bg-blue-500 p-3 rounded-lg w-12 h-12 mx-auto mb-4">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">KI-Wissensextraktion</h3>
+        <p class="text-blue-200 text-sm">Automatische Erkennung von Konzepten und Verbindungen aus Luigi's Erfahrungen</p>
+      </div>
+      
+      <div class="glass-effect rounded-xl p-6 text-center">
+        <div class="bg-green-500 p-3 rounded-lg w-12 h-12 mx-auto mb-4">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">Intelligente Nachfragen</h3>
+        <p class="text-blue-200 text-sm">Automatische Follow-up Fragen um das Wissen systematisch zu vertiefen</p>
+      </div>
+      
+      <div class="glass-effect rounded-xl p-6 text-center">
+        <div class="bg-purple-500 p-3 rounded-lg w-12 h-12 mx-auto mb-4">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">Knowledge Graph</h3>
+        <p class="text-blue-200 text-sm">Visualisierung von Wissensverbindungen in einem dynamischen Graphen</p>
+      </div>
+    </div>
+    
+  </div>
+</div>

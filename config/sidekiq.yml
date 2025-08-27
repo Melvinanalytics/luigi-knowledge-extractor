@@ -1,0 +1,15 @@
+:concurrency: 5
+:timeout: 25
+:verbose: false
+
+:queues:
+  - default
+  - knowledge_extraction
+  - knowledge_graph
+  - audio_processing
+
+production:
+  :concurrency: 10
+  
+development:
+  :concurrency: 2

@@ -1,0 +1,160 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900" 
+     data-controller="luigi-session" 
+     data-luigi-session-session-id-value="<%= @session.id %>">
+  
+  <div class="container mx-auto px-4 py-6 max-w-6xl">
+    
+    <!-- Header -->
+    <div class="glass-effect rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="bg-gradient-to-r from-yellow-400 to-orange-500 p-3 rounded-xl">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.54 0 3.04-.34 4.39-.95l.61.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-.61-.61C19.66 15.04 22 13.54 22 12c0-5.52-4.48-10-10-10z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white">Luigi Knowledge Extractor</h1>
+            <p class="text-blue-100">Session: <%= @session.session_name %></p>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-6">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-300" 
+                 data-luigi-session-target="timer"
+                 data-controller="timer"
+                 data-timer-start-time-value="<%= @session.started_at.iso8601 %>">
+              <%= @stats[:duration_formatted] %>
+            </div>
+            <div class="text-sm text-blue-200">Session Zeit</div>
+          </div>
+          
+          <%= link_to export_session_path(@session, format: :json), 
+                      class: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 transition-colors",
+                      data: { turbo: false } do %>
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span>Export</span>
+          <% end %>
+          
+          <%= link_to root_path, 
+                      class: "glass-effect hover:bg-white/20 text-white px-4 py-3 rounded-xl transition-colors" do %>
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Dashboard -->
+    <div class="grid grid-cols-4 gap-4 mb-6" data-luigi-session-target="stats">
+      <div class="glass-effect rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-white" data-luigi-session-target="entitiesCount">
+          <%= @stats[:entities_extracted] %>
+        </div>
+        <div class="text-sm text-blue-200">Konzepte erfasst</div>
+      </div>
+      
+      <div class="glass-effect rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-white" data-luigi-session-target="relationshipsCount">
+          <%= @stats[:relationships_created] %>
+        </div>
+        <div class="text-sm text-blue-200">Verbindungen</div>
+      </div>
+      
+      <div class="glass-effect rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-white" data-luigi-session-target="messagesCount">
+          <%= @stats[:total_messages] %>
+        </div>
+        <div class="text-sm text-blue-200">Nachrichten</div>
+      </div>
+      
+      <div class="glass-effect rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-white" data-luigi-session-target="confidence">
+          <%= (@stats[:avg_confidence] * 100).round %>%
+        </div>
+        <div class="text-sm text-blue-200">Verstanden</div>
+      </div>
+    </div>
+
+    <!-- Chat Messages Container -->
+    <div class="glass-effect rounded-2xl h-96 mb-6 flex flex-col">
+      <div class="flex-1 overflow-y-auto p-6" id="messages" data-luigi-session-target="messagesContainer">
+        <%= render @messages %>
+        
+        <!-- Processing Indicator (hidden by default) -->
+        <div id="processing-indicator" class="hidden" data-luigi-session-target="processingIndicator">
+          <%= render 'messages/processing_indicator' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Input Form -->
+    <div id="message_form">
+      <%= render 'messages/form', session: @session, message: @new_message %>
+    </div>
+    
+    <!-- Voice Recording Interface -->
+    <div class="glass-effect rounded-xl p-4 mt-4" 
+         data-controller="voice-recorder" 
+         data-voice-recorder-session-id-value="<%= @session.id %>"
+         style="display: none;" 
+         data-luigi-session-target="voiceInterface">
+      
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse" 
+               data-voice-recorder-target="recordingIndicator"></div>
+          <span class="text-white text-sm">Aufnahme läuft...</span>
+          <span class="text-blue-200 text-sm" 
+                data-voice-recorder-target="duration">0:00</span>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <button type="button" 
+                  class="glass-effect hover:bg-red-500/20 text-white px-4 py-2 rounded-lg transition-colors"
+                  data-action="click->voice-recorder#stop">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 6h12v12H6z"/>
+            </svg>
+            <span class="ml-2 text-sm">Stoppen</span>
+          </button>
+          
+          <button type="button" 
+                  class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  data-action="click->voice-recorder#cancel">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            <span class="ml-2 text-sm">Abbrechen</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Waveform visualization placeholder -->
+      <div class="mt-4 h-12 bg-white/10 rounded-lg flex items-center justify-center">
+        <div class="flex items-center space-x-1" data-voice-recorder-target="waveform">
+          <% 20.times do %>
+            <div class="w-1 bg-blue-400 rounded-full animate-pulse" style="height: <%= rand(20..40) %>px;"></div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Connection Status -->
+<div id="connection-status" 
+     class="fixed bottom-4 left-4 glass-effect text-white px-4 py-2 rounded-lg text-sm"
+     style="display: none;"
+     data-luigi-session-target="connectionStatus">
+  <div class="flex items-center space-x-2">
+    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+    <span>Verbunden</span>
+  </div>
+</div>

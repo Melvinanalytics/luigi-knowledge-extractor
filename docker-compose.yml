@@ -1,0 +1,97 @@
+services:
+  luigi-app:
+    build: .
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@postgres:5432/luigi_development}
+      REDIS_URL: redis://redis:6379/0
+      NEO4J_URL: ${NEO4J_URL}
+      NEO4J_USER: ${NEO4J_USER}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ACTION_CABLE_URL: ws://localhost:3333/cable
+      # Supabase specific (fallback to local postgres)
+      SUPABASE_URL: ${SUPABASE_URL:-http://localhost:3333}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-development_key}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-development_service_key}
+    depends_on:
+      - postgres
+      - redis  
+      - neo4j
+    ports:
+      - "3333:3000"
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
+
+  postgres:
+    image: pgvector/pgvector:pg14
+    environment:
+      POSTGRES_DB: luigi_development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+    
+  neo4j:
+    image: neo4j:4.4
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_memory_heap_initial__size: 256m
+      NEO4J_dbms_memory_heap_max__size: 512m
+      NEO4J_dbms_connector_bolt_tls__level: DISABLED
+      NEO4J_dbms_connector_https_enabled: false
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+    restart: unless-stopped
+
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@postgres:5432/luigi_development}
+      REDIS_URL: redis://redis:6379/0
+      NEO4J_URL: ${NEO4J_URL}
+      NEO4J_USER: ${NEO4J_USER}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # Supabase specific (fallback to local postgres)
+      SUPABASE_URL: ${SUPABASE_URL:-http://localhost:3333}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-development_key}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-development_service_key}
+    depends_on:
+      - postgres
+      - redis
+      - neo4j
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  neo4j_data:
+  neo4j_logs:
+  bundle_cache:

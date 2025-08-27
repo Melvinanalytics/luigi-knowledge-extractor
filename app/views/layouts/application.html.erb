@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Luigi Knowledge Extractor</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <script src="https://unpkg.com/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
+    <script src="https://unpkg.com/@hotwired/stimulus@3.2.2/dist/stimulus.umd.js"></script>
+    
+    <script type="module">
+      import { Application } from "https://unpkg.com/@hotwired/stimulus@3.2.2/dist/stimulus.js"
+      const application = Application.start()
+      window.Stimulus = application
+    </script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+      body {
+        background: linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #7c3aed 100%);
+        min-height: 100vh;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .message-user {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      }
+      
+      .message-assistant {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .message-system {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+        border: 1px solid rgba(251, 191, 36, 0.3);
+      }
+      
+      .loading-dots {
+        display: inline-block;
+        position: relative;
+        width: 40px;
+        height: 10px;
+      }
+      
+      .loading-dots div {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ffffff;
+        animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        transform: translateY(-50%);
+      }
+      
+      .loading-dots div:nth-child(1) {
+        left: 4px;
+        animation: loading1 0.6s infinite;
+      }
+      
+      .loading-dots div:nth-child(2) {
+        left: 4px;
+        animation: loading2 0.6s infinite;
+      }
+      
+      .loading-dots div:nth-child(3) {
+        left: 16px;
+        animation: loading2 0.6s infinite;
+      }
+      
+      .loading-dots div:nth-child(4) {
+        left: 28px;
+        animation: loading3 0.6s infinite;
+      }
+      
+      @keyframes loading1 {
+        0% { transform: scale(0) translateY(-50%); }
+        100% { transform: scale(1) translateY(-50%); }
+      }
+      
+      @keyframes loading3 {
+        0% { transform: scale(1) translateY(-50%); }
+        100% { transform: scale(0) translateY(-50%); }
+      }
+      
+      @keyframes loading2 {
+        0% { transform: translate(0, -50%); }
+        100% { transform: translate(12px, -50%); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Flash Messages -->
+    <div id="flash-messages" class="fixed top-4 right-4 z-50 space-y-2">
+      <% flash.each do |type, message| %>
+        <div class="glass-effect text-white px-6 py-3 rounded-xl shadow-lg max-w-md" 
+             data-controller="flash" 
+             data-action="click->flash#dismiss"
+             data-flash-auto-dismiss-value="5000">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <% if type == 'notice' %>
+                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+              <% else %>
+                <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+              <% end %>
+              <span class="text-sm"><%= message %></span>
+            </div>
+            <button class="ml-3 text-white/60 hover:text-white">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <main>
+      <%= yield %>
+    </main>
+    
+    <%= action_cable_meta_tag %>
+  </body>
+</html>

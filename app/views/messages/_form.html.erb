@@ -1,0 +1,109 @@
+<%= form_with model: [session, message], 
+              id: "message_form",
+              local: false,
+              class: "glass-effect rounded-2xl p-4",
+              data: { 
+                controller: "message-form",
+                action: "turbo:submit-end->message-form#clearForm",
+                luigi_session_target: "messageForm"
+              } do |f| %>
+  
+  <div class="flex items-end space-x-4">
+    
+    <!-- Voice Input Button -->
+    <button type="button" 
+            class="p-3 rounded-xl transition-colors bg-white/20 hover:bg-white/30 text-white flex-shrink-0"
+            data-controller="voice-input"
+            data-action="click->voice-input#toggle"
+            data-voice-input-session-id-value="<%= session.id %>"
+            data-luigi-session-target="voiceButton">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2a1 1 0 112 0v2a5 5 0 0010 0v-2a1 1 0 112 0zM12 15a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z"/>
+      </svg>
+    </button>
+    
+    <!-- Text Input -->
+    <div class="flex-1">
+      <%= f.text_area :content,
+                      placeholder: "Luigi, erzähl mir von deinen Erfahrungen... (Enter zum Senden, Shift+Enter für neue Zeile)",
+                      rows: 3,
+                      class: "w-full bg-white/10 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all",
+                      data: { 
+                        message_form_target: "textarea", 
+                        action: "keydown->message-form#handleKeydown input->message-form#handleInput" 
+                      } %>
+      
+      <!-- Character Counter -->
+      <div class="text-xs text-blue-300 mt-1 flex justify-between items-center">
+        <span data-message-form-target="characterCounter">0 Zeichen</span>
+        <span class="text-blue-400">💡 Tipp: Erzähl einfach drauflos!</span>
+      </div>
+    </div>
+    
+    <!-- Send Button -->
+    <div class="flex flex-col space-y-2">
+      <%= f.submit "Senden",
+                   class: "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed",
+                   data: { 
+                     message_form_target: "submitButton",
+                     disable_with: "Sende..."
+                   } %>
+      
+      <!-- Quick Actions -->
+      <div class="flex space-x-1">
+        <button type="button" 
+                class="text-xs text-blue-300 hover:text-white px-2 py-1 rounded hover:bg-white/10 transition-colors"
+                data-action="click->message-form#insertTemplate"
+                data-template="Ich hab da mal ein Problem mit ">
+          Problem
+        </button>
+        <button type="button" 
+                class="text-xs text-blue-300 hover:text-white px-2 py-1 rounded hover:bg-white/10 transition-colors"
+                data-action="click->message-form#insertTemplate"
+                data-template="Bei Projekten wie ">
+          Projekt
+        </button>
+        <button type="button" 
+                class="text-xs text-blue-300 hover:text-white px-2 py-1 rounded hover:bg-white/10 transition-colors"
+                data-action="click->message-form#insertTemplate"
+                data-template="Meine Erfahrung zeigt ">
+          Tipp
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Hidden fields -->
+  <%= f.hidden_field :message_type, value: "user" %>
+  
+  <!-- Error display -->
+  <% if message.errors.any? %>
+    <div class="mt-3 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+      <div class="text-sm text-red-200">
+        <% message.errors.full_messages.each do |error| %>
+          <div>❌ <%= error %></div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  
+  <!-- Typing Indicator -->
+  <div class="mt-2 text-xs text-blue-300 opacity-0 transition-opacity" 
+       data-message-form-target="typingIndicator">
+    <div class="flex items-center space-x-2">
+      <div class="loading-dots">
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <span>Luigi tippt...</span>
+    </div>
+  </div>
+  
+<% end %>
+
+<!-- File Upload for Audio (hidden) -->
+<input type="file" 
+       id="audio-file-input" 
+       accept="audio/*" 
+       style="display: none"
+       data-luigi-session-target="audioInput"
+       data-action="change->luigi-session#handleAudioUpload">

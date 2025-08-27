@@ -1,0 +1,14 @@
+[build]
+nixpacksVersion = "1.18.0"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+RAILS_ENV = "production"
+RAILS_SERVE_STATIC_FILES = "true"
+RAILS_LOG_TO_STDOUT = "true"
+RAILS_MAX_THREADS = "5"
+RAILS_MIN_THREADS = "5"
+WEB_CONCURRENCY = "1"

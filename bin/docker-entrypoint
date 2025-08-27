@@ -1,0 +1,12 @@
+#!/bin/bash -e
+
+# If running the rails server then create or migrate existing database
+if [ "${*}" == "./bin/rails server" ]; then
+  echo "Preparing database..."
+  ./bin/rails db:prepare
+  
+  echo "Creating Luigi expert..."
+  ./bin/rails runner "LuigiExpert.luigi" || true
+fi
+
+exec "${@}"

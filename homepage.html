@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Luigi Knowledge Extractor</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="z_r6NtBIFIce1XSmR6dnQOWAALPdJxr0HBhhaUaIMWgCiSffx-L56E7iY0yHuhRoASB4o_u3F4WmqtpqYW-WIQ" />
+    
+    
+    <link rel="stylesheet" href="/assets/application-1b3dd2f48b5e331b041c413d636bcfd9a8472fb172dd3809c411f3e17c7241bf.css" data-turbo-track="reload" />
+    <script src="https://unpkg.com/@hotwired/turbo@7.3.0/dist/turbo.es2017-umd.js"></script>
+    <script src="https://unpkg.com/@hotwired/stimulus@3.2.2/dist/stimulus.umd.js"></script>
+    
+    <script type="module">
+      import { Application } from "https://unpkg.com/@hotwired/stimulus@3.2.2/dist/stimulus.js"
+      const application = Application.start()
+      window.Stimulus = application
+    </script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+      body {
+        background: linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #7c3aed 100%);
+        min-height: 100vh;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .message-user {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      }
+      
+      .message-assistant {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .message-system {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+        border: 1px solid rgba(251, 191, 36, 0.3);
+      }
+      
+      .loading-dots {
+        display: inline-block;
+        position: relative;
+        width: 40px;
+        height: 10px;
+      }
+      
+      .loading-dots div {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ffffff;
+        animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        transform: translateY(-50%);
+      }
+      
+      .loading-dots div:nth-child(1) {
+        left: 4px;
+        animation: loading1 0.6s infinite;
+      }
+      
+      .loading-dots div:nth-child(2) {
+        left: 4px;
+        animation: loading2 0.6s infinite;
+      }
+      
+      .loading-dots div:nth-child(3) {
+        left: 16px;
+        animation: loading2 0.6s infinite;
+      }
+      
+      .loading-dots div:nth-child(4) {
+        left: 28px;
+        animation: loading3 0.6s infinite;
+      }
+      
+      @keyframes loading1 {
+        0% { transform: scale(0) translateY(-50%); }
+        100% { transform: scale(1) translateY(-50%); }
+      }
+      
+      @keyframes loading3 {
+        0% { transform: scale(1) translateY(-50%); }
+        100% { transform: scale(0) translateY(-50%); }
+      }
+      
+      @keyframes loading2 {
+        0% { transform: translate(0, -50%); }
+        100% { transform: translate(12px, -50%); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Flash Messages -->
+    <div id="flash-messages" class="fixed top-4 right-4 z-50 space-y-2">
+    </div>
+    
+    <main>
+      <div class="min-h-screen flex items-center justify-center p-4">
+  <div class="max-w-4xl w-full">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <div class="flex justify-center mb-6">
+        <div class="glass-effect p-8 rounded-3xl">
+          <div class="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-2xl">
+            <svg class="w-16 h-16 text-white mx-auto" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.54 0 3.04-.34 4.39-.95l.61.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-.61-.61C19.66 15.04 22 13.54 22 12c0-5.52-4.48-10-10-10zm5.83 14.83c-.78.78-1.81 1.17-2.83 1.17s-2.05-.39-2.83-1.17L9 13.66c-.78-.78-1.17-1.81-1.17-2.83s.39-2.05 1.17-2.83c.78-.78 1.81-1.17 2.83-1.17s2.05.39 2.83 1.17L17.83 10.83z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <h1 class="text-5xl font-bold text-white mb-4">
+        Luigi Knowledge Extractor
+      </h1>
+      
+      <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+        Strukturiere Luigi's 30-jährige Erfahrung in der Bausanierung. 
+        <span class="text-yellow-300">Intelligente Wissensextraktion</span> mit automatischen Nachfragen und Graph-Visualisierung.
+      </p>
+    </div>
+    
+    <!-- Statistics Dashboard -->
+    
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+      <a class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-4 px-8 rounded-2xl text-lg transition-all duration-200 transform hover:scale-105 shadow-xl text-center" data-turbo-method="post" data-confirm="Neue Wissenssession mit Luigi starten?" rel="nofollow" data-method="post" href="/sessions">
+        <div class="flex items-center justify-center space-x-3">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>Neue Session starten</span>
+        </div>
+</a>      
+    </div>
+    
+    <!-- Recent Sessions -->
+    
+    <!-- Features Info -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+      <div class="glass-effect rounded-xl p-6 text-center">
+        <div class="bg-blue-500 p-3 rounded-lg w-12 h-12 mx-auto mb-4">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">KI-Wissensextraktion</h3>
+        <p class="text-blue-200 text-sm">Automatische Erkennung von Konzepten und Verbindungen aus Luigi's Erfahrungen</p>
+      </div>
+      
+      <div class="glass-effect rounded-xl p-6 text-center">
+        <div class="bg-green-500 p-3 rounded-lg w-12 h-12 mx-auto mb-4">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">Intelligente Nachfragen</h3>
+        <p class="text-blue-200 text-sm">Automatische Follow-up Fragen um das Wissen systematisch zu vertiefen</p>
+      </div>
+      
+      <div class="glass-effect rounded-xl p-6 text-center">
+        <div class="bg-purple-500 p-3 rounded-lg w-12 h-12 mx-auto mb-4">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">Knowledge Graph</h3>
+        <p class="text-blue-200 text-sm">Visualisierung von Wissensverbindungen in einem dynamischen Graphen</p>
+      </div>
+    </div>
+    
+  </div>
+</div>
+    </main>
+    
+    <meta name="action-cable-url" content="ws://localhost:3333/cable" />
+  </body>
+</html>
