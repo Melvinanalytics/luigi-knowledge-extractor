@@ -46,8 +46,9 @@ RUN apt-get remove --purge -y build-essential git && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create a non-root user
+# Create a non-root user and required directories
 RUN useradd rails --create-home --shell /bin/bash && \
+    mkdir -p log storage tmp && \
     chown -R rails:rails db log storage tmp
 USER rails:rails
 
