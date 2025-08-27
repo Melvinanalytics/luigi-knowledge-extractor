@@ -8,32 +8,42 @@
 3. **New Project** → **Deploy from GitHub repo**
 4. **Repository:** `Gino_Extraction` auswählen
 
-### 2. PostgreSQL Service hinzufügen
-1. **Add Service** → **Database** → **PostgreSQL**
-2. Warten bis PostgreSQL läuft
-
-### 3. Redis Service hinzufügen  
+### 2. Redis Service hinzufügen (für Background Jobs)
 1. **Add Service** → **Database** → **Redis**
 2. Warten bis Redis läuft
 
-### 4. Neo4j Service hinzufügen
-1. **Add Service** → **Docker Image**
+### 3. Neo4j Service hinzufügen
+1. **Add Service** → **Docker Image** 
 2. **Image:** `neo4j:4.4`
-3. **Port:** 7687, 7474
+3. **Ports:** 7687, 7474
 
-### 5. Environment Variables setzen
+### 4. Environment Variables setzen
 
-**Im Rails Service:**
+**WICHTIG:** Alle Variables gehen in den **WEB SERVICE** (deine Rails App):
+
 ```
 RAILS_ENV=production
 SECRET_KEY_BASE=1b5bafe817b2367ef2779d36e3ebb749cc1ae7ea7d808705bde80469c11b935f9cbe0c8d8acce3facd80424b31a9a727d6da56b8b2e723edb1c542dda79527cb
 RAILS_MASTER_KEY=6fe1e4af3c8b2cd06dc7173b71ce27afacbdc2e6a3b9bf1af662d748bd5d426786f28dc3bccdd85b11b232523e04fd0f2dc03db7b6374403fc7558598e047d84
-DATABASE_URL=${{Postgres.DATABASE_PUBLIC_URL}}
+
+# SUPABASE (extern - nicht Railway PostgreSQL!)
+DATABASE_URL=postgresql://postgres:rmn8sV9YfGNGPIg@db.jccvehmnauuwpncrgcdu.supabase.co:5432/postgres
+SUPABASE_URL=https://jccvehmnauuwpncrgcdu.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjY3ZlaG1uYXV1d3BuY3JnY2R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxODc2NDgsImV4cCI6MjA3MTc2MzY0OH0.t7hoXqd_yJnM0sUX4mB2JGI6yyD-zk5CHO9lj2nV2mM
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjY3ZlaG1uYXV1d3BuY3JnY2R1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjE4NzY0OCwiZXhwIjoyMDcxNzYzNjQ4fQ.2EOEDfLLx2e-aaTcbcdhvMSceGso17jQivwaaxa5cyQ
+
+# REDIS (von Railway Service)
 REDIS_URL=${{Redis.REDIS_PUBLIC_URL}}
+
+# NEO4J (von Railway Neo4j Service) 
 NEO4J_URL=bolt://neo4j:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=ca89da59a6f152c503b9a87da37e4842
+
+# OPENAI
 OPENAI_API_KEY=YOUR_OPENAI_API_KEY_HERE
+
+# RAILWAY
 PORT=3000
 RAILS_SERVE_STATIC_FILES=true
 RAILS_LOG_TO_STDOUT=true
