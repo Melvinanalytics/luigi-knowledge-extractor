@@ -38,8 +38,8 @@ RUN yarn install --frozen-lockfile
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
-# Precompile assets for production
-RUN SECRET_KEY_BASE=DUMMY REDIS_URL=redis://localhost:6379/0 OPENAI_API_KEY=dummy PRECOMPILING_ASSETS=1 bundle exec rails assets:precompile
+# Precompile assets for production (Railway handles this automatically)
+# RUN SECRET_KEY_BASE=DUMMY REDIS_URL=redis://localhost:6379/0 OPENAI_API_KEY=dummy PRECOMPILING_ASSETS=1 bundle exec rails assets:precompile
 
 # Clean up build dependencies
 RUN apt-get remove --purge -y build-essential git && \
